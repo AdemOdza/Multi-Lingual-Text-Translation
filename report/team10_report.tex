@@ -93,12 +93,12 @@ We then evaluated the models based on their BLEU scores.
 \section{Related Work}
 Work in machine translation and multilingual natural language processing has improved a lot over the recent years, especially in handling the unique cases that are introduced by code\-mixed languages.
 
-Modern neural machine translation (NMT) has given us the foundation of the sequence\-to\-sequence (seq2seq) paradigm, which learns an end\-to\-end mapping from an input sequence to a target sequence using neural networks. Sutskever et al. introduced the canonical seq2seq model that uses multilayer Long Short\-Term Memory (LSTM) encoders and decoders to transform variable\-length inputs into fixed\-length representations, and then decode these representations into target sequences. This paper showed good performance on English–French translation benchmarks compared to traditional statistical methods. 
+Modern neural machine translation (NMT) has given us the foundation of the sequence\-to\-sequence (seq2seq) paradigm [5], which learns an end\-to\-end mapping from an input sequence to a target sequence using neural networks. Sutskever et al. introduced the canonical seq2seq model that uses multilayer Long Short\-Term Memory (LSTM) encoders and decoders to transform variable\-length inputs into fixed\-length representations, and then decode these representations into target sequences. This paper showed good performance on English–French translation benchmarks compared to traditional statistical methods. 
 These seq2seq models were used as the foundation for neural approaches for translation and other sequence prediction tasks. This was done by showing that recurrent architectures could learn representations for both encoding and decoding language data without human intervention.
 
 Even though we see these advances in neural translation, the code\-mixed language translation part has many other challenges due to the frequent blending of languages while people speak and the lack of annotated parallel data (to verify against). To address such data limitations, recent work has focused on synthetic data generation. The HINMIX\_hi\-en dataset that we used in this project gave us large\-scale parallel Hinglish\-English data by using bilingual corpus data and synthetic code\-mixing techniques.
 
-Using this work, Kartik et al.\ provided a framework that uses synthetic data generation with joint learning that improves translation quality for noisy, code-mixed text. Their method generated large code-mixed data~\citep{kartik2024}. It also uses joint training to share parameters around clean and noisy examples, which means that it gave an improved performance even in zero-shot transfer to new code-mixed variants.
+Using this work, Kartik et al.\ provided a framework that uses synthetic data generation with joint learning that improves translation quality for noisy, code-mixed text. Their method generated large code-mixed data [1]. It also uses joint training to share parameters around clean and noisy examples, which means that it gave an improved performance even in zero-shot transfer to new code-mixed variants.
 
 Another major trend in NLP has been the pre\-training and fine\-tuning process used by models like BERT (Bidirectional Encoder Representations from Transformers). BERT gave us a deep bidirectional contextual embedding method that captured language representations from large unlabeled data. BERT is also used in many downstream tasks that includes classification, inference, and translation related tasks after doing fine\-tuning.
 
@@ -191,7 +191,7 @@ The performance gap highlights the importance of extensive multilingual pretrain
 We describe the preprocessing methods, model implementations, and model evaluation in this section.
 
 \subsection{Data Preprocessing}
-We had the following approach for tokenizing the data - mBERT tokenizer. The BERT tokenizer uses BPE (byte-pair encoding) subword tokenization. We used the BertTokenizer from HuggingFace transformers [5]. OOV words are handled using subwords. This particular tokenizer had been pretrained on $104$ languages. We limited our max sequence length to $128$ - anything longer was truncated. [4]
+We had the following approach for tokenizing the data - mBERT tokenizer. The BERT tokenizer uses BPE (byte-pair encoding) subword tokenization. We used the BertTokenizer from HuggingFace transformers [4]. OOV words are handled using subwords. This particular tokenizer had been pretrained on $104$ languages. We limited our max sequence length to $128$ - anything longer was truncated. [3]
 
 \subsection{Model Architectures}
 We used a simple transformer architecture with self-attention mechanism. This way, we are able to process sequences in parallel and capture long-range dependencies - often surpassing RNNs.
@@ -208,7 +208,7 @@ Our seq2seq architecture was designed as follows:
 \begin{enumerate}
     \item Bidirectional LSTM encoder two layers and $256$ dimensions (since the bidirectional LSTM concatenates forward and backward hidden states)
     \item LSTM decoder
-    \item BahadanauAttention [3] - This is a differentiable attention model without the unidirectional alignment limitation. When predicting a token, if not all the input tokens are relevant, the model aligns (or attends) only to parts of the input sequence that are deemed relevant to the current prediction. This is then used to update the current state before generating the next token.
+    \item BahadanauAttention [2] - This is a differentiable attention model without the unidirectional alignment limitation. When predicting a token, if not all the input tokens are relevant, the model aligns (or attends) only to parts of the input sequence that are deemed relevant to the current prediction. This is then used to update the current state before generating the next token.
 \end{enumerate}
 
 \begin{table}[]
@@ -237,7 +237,16 @@ For evaluation, we used the BLEU (Bilingual Evaluation Understudy) for our prima
 We implemented the following models: transformer and seq2seq with mBERT embeddings and compared our performance to baseline scores of learned embeddings.
 
 First we loaded up the embeddings from mBERT
+\includegraphics[width=\columnwidth]{tokenizer.png}
 
+Then we tokenized both the source (hindi-english code mixed) and target (english) sentences using our loaded tokenizer. mBERT applies BPE to handle OOV words by breaking them up into subwords. During training, we also shift the target sequence that creates input output pairs for the decoder. Thus, at each timestep, the decoder receives all previous tokens and learns to predict the next token.
+\includegraphics[width=\columnwidth]{batching.png}
+
+This is our main training loop using AdamW as the optimizer and Cross Entropy loss. After gradient computation using backpropagation, we also applied a clipping of $1.0$ to prevent explosion of the gradients.
+\includegraphics[width=\columnwidth]{trainloop.png}
+
+Then, we calculated the BLEU score using 500 of our test samples. 
+\includegraphics[width=\columnwidth]{bleu.png}
 
 \section{Conclusion}
 We investigated cross-lingual code-mixed Hindi-English translation in this project experimenting with different embedding strategies and architectures. Our results show that Transformer-based architecture performs better compared to Seq2Seq-based architecture. The main reason behind this would be the self-attention mechanism of Transformers, which supports the capturing long-range dependencies.
@@ -249,9 +258,8 @@ Our final model achieved a BLEU score of $13.70$, however larger pre-trained mod
 The results support the conclusion that Transformers, combined with multilingual pre-training, form the foundation for building strong models for cross-lingual code-mixed translation.
 
 % Custom bibliography entries only
-\section{Bibliography}
+\section*{Bibliography}
 \begin{enumerate}[label = {[\arabic*]}]
-    \item kartik, "HINMIX\_hi-en," Hugging Face, Feb. 2025, doi: https://doi.org/10.57967/hf/4520.
     \item K. Kartik, S. Soni, A. Kunchukuttan, T. Chakraborty, and M. S. Akhtar, "Synthetic Data Generation and Joint Learning for Robust Code-Mixed Translation," arXiv.org, 2024. \url{https://arxiv.org/abs/2403.16771}.
     \item A. Zhang, Z. Lipton, M. Li, and A. Smola, "The Bahdanau Attention Mechanism - Dive into Deep Learning 1.0.3," D2l.ai, 2014. \url{https://d2l.ai/chapter_attention-mechanisms-and-transformers/bahdanau-attention.html}
     \item J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding," ArXiv, Oct. 11, 2018. \url{https://arxiv.org/abs/1810.04805}
