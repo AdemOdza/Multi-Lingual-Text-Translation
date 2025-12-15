@@ -120,6 +120,52 @@ The dataset that was used in this project is the HINMIX dataset. HINMIX is a mas
     \item Each Hinglish sentence is paired with a human-annotated English translation.
 \end{itemize}
 
+\section{Methodology}
+We describe the preprocessing methods, model implementations, and model evaluation in this section.
+
+\subsection{Data Preprocessing}
+We had the following approach for tokenizing the data - mBERT tokenizer. The BERT tokenizer uses BPE (byte-pair encoding) subword tokenization. We used the BertTokenizer from HuggingFace transformers [4]. OOV words are handled using subwords. This particular tokenizer had been pretrained on $104$ languages. We limited our max sequence length to $128$ - anything longer was truncated. [3]
+
+\subsection{Model Architectures}
+We used a simple transformer architecture with self-attention mechanism. This way, we are able to process sequences in parallel and capture long-range dependencies - often surpassing RNNs.
+
+Our transformer architecture (hidden dims = $256$) was designed as follows:
+\begin{enumerate}
+    \item The encoder consisted of three layers - mutli-head self attention (four heads), FFNN (with a dimension of 1024), layer normalization
+    \item The decoder had 3 layers that incorporated masked self-attention and cross-attention
+    \item Sinusoidal positional embedding
+\end{enumerate}
+A dropout rate (0.01) was applied after the attention and feed-forward layers.
+
+Our seq2seq architecture was designed as follows:
+\begin{enumerate}
+    \item Bidirectional LSTM encoder two layers and $256$ dimensions (since the bidirectional LSTM concatenates forward and backward hidden states)
+    \item LSTM decoder
+    \item BahadanauAttention [2] - This is a differentiable attention model without the unidirectional alignment limitation. When predicting a token, if not all the input tokens are relevant, the model aligns (or attends) only to parts of the input sequence that are deemed relevant to the current prediction. This is then used to update the current state before generating the next token.
+\end{enumerate}
+
+\begin{table}[]
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|l|l|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Hyperparameter}} & \multicolumn{1}{c|}{\textbf{Transformer}} & \textbf{Seq2Seq} \\ \hline
+Hidden Dimension                              & $256$                                       & $256$              \\ \hline
+Layers                                        & $2$                                         & $2$                \\ \hline
+Attention Heads                               & $8$                                         & -                \\ \hline
+Feed-Forward Dim.                             & $1024$                                      & -                \\ \hline
+Dropout                                       & $0.1$                                       & $0.1$              \\ \hline
+Embedding Dim.                                & $768$ to $256$                                & $768$ to $256$       \\ \hline
+\end{tabular}%
+}
+\caption{Hyperparameters on the Transformer and Seq2Seq models}\label{tab:hyperparams}
+\end{table}
+
+\subsection{Embeddings}
+We used the frozen bert-base-multilingual-cased embeddings - this is the pretrained BERT embedding trained on a massive multilingual corpus. We did this to preserve the mutli-lingual embedding space and also reduce our trainable parameters for our models. We also hoped that using pre-trained embeddings would give the model better zero-shot capabilities.
+
+\subsection{Evaluation}
+For evaluation, we used the BLEU (Bilingual Evaluation Understudy) for our primary evaluation metric - we used the sacrebleu library. The BLEU score is a measure of n-gram overlap between the predicted and reference translations. The scores range between $0$-$100$ with models around the $20$-$30$ BLEU points producing coherent translations.
+
 \section{Experiments and Results}
 
 \subsection{Architecture and Embedding Comparison}
@@ -186,52 +232,6 @@ facebook/m2m100\_418M                & $1.21$                                   
 Large-scale multilingual models such as NLLB-200 significantly outperformed custom-trained models.
 Models trained on multilingual or code-mixed data showed better zero-shot generalization.
 The performance gap highlights the importance of extensive multilingual pretraining.
-
-\section{Methodology}
-We describe the preprocessing methods, model implementations, and model evaluation in this section.
-
-\subsection{Data Preprocessing}
-We had the following approach for tokenizing the data - mBERT tokenizer. The BERT tokenizer uses BPE (byte-pair encoding) subword tokenization. We used the BertTokenizer from HuggingFace transformers [4]. OOV words are handled using subwords. This particular tokenizer had been pretrained on $104$ languages. We limited our max sequence length to $128$ - anything longer was truncated. [3]
-
-\subsection{Model Architectures}
-We used a simple transformer architecture with self-attention mechanism. This way, we are able to process sequences in parallel and capture long-range dependencies - often surpassing RNNs.
-
-Our transformer architecture (hidden dims = $256$) was designed as follows:
-\begin{enumerate}
-    \item The encoder consisted of three layers - mutli-head self attention (four heads), FFNN (with a dimension of 1024), layer normalization
-    \item The decoder had 3 layers that incorporated masked self-attention and cross-attention
-    \item Sinusoidal positional embedding
-\end{enumerate}
-A dropout rate (0.01) was applied after the attention and feed-forward layers.
-
-Our seq2seq architecture was designed as follows:
-\begin{enumerate}
-    \item Bidirectional LSTM encoder two layers and $256$ dimensions (since the bidirectional LSTM concatenates forward and backward hidden states)
-    \item LSTM decoder
-    \item BahadanauAttention [2] - This is a differentiable attention model without the unidirectional alignment limitation. When predicting a token, if not all the input tokens are relevant, the model aligns (or attends) only to parts of the input sequence that are deemed relevant to the current prediction. This is then used to update the current state before generating the next token.
-\end{enumerate}
-
-\begin{table}[]
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{|l|l|l|}
-\hline
-\multicolumn{1}{|c|}{\textbf{Hyperparameter}} & \multicolumn{1}{c|}{\textbf{Transformer}} & \textbf{Seq2Seq} \\ \hline
-Hidden Dimension                              & $256$                                       & $256$              \\ \hline
-Layers                                        & $2$                                         & $2$                \\ \hline
-Attention Heads                               & $8$                                         & -                \\ \hline
-Feed-Forward Dim.                             & $1024$                                      & -                \\ \hline
-Dropout                                       & $0.1$                                       & $0.1$              \\ \hline
-Embedding Dim.                                & $768$ to $256$                                & $768$ to $256$       \\ \hline
-\end{tabular}%
-}
-\caption{Hyperparameters on the Transformer and Seq2Seq models}\label{tab:hyperparams}
-\end{table}
-
-\subsection{Embeddings}
-We used the frozen bert-base-multilingual-cased embeddings - this is the pretrained BERT embedding trained on a massive multilingual corpus. We did this to preserve the mutli-lingual embedding space and also reduce our trainable parameters for our models. We also hoped that using pre-trained embeddings would give the model better zero-shot capabilities.
-
-\subsection{Evaluation}
-For evaluation, we used the BLEU (Bilingual Evaluation Understudy) for our primary evaluation metric - we used the sacrebleu library. The BLEU score is a measure of n-gram overlap between the predicted and reference translations. The scores range between $0$-$100$ with models around the $20$-$30$ BLEU points producing coherent translations.
 
 \section{Implementation}
 We implemented the following models: transformer and seq2seq with mBERT embeddings and compared our performance to baseline scores of learned embeddings.
