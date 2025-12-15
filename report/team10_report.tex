@@ -7,7 +7,7 @@
 % Standard package includes
 \usepackage{times}
 \usepackage{latexsym}
-
+\usepackage{enumitem}
 % For proper rendering and hyphenation of words containing Latin characters (including in bib files)
 \usepackage[T1]{fontenc}
 % For Vietnamese characters
@@ -98,7 +98,7 @@ These seq2seq models were used as the foundation for neural approaches for trans
 
 Even though we see these advances in neural translation, the code\-mixed language translation part has many other challenges due to the frequent blending of languages while people speak and the lack of annotated parallel data (to verify against). To address such data limitations, recent work has focused on synthetic data generation. The HINMIX\_hi\-en dataset that we used in this project gave us large\-scale parallel Hinglish\-English data by using bilingual corpus data and synthetic code\-mixing techniques.
 
-Using this work, Kartik et al. provided a framework that uses synthetic data generation with joint learning that improves translation quality for noisy, code\-mixed text. Their method generated large code\-mixed data. It also uses joint training to share parameters around clean and noisy examples, which means that it gave an improved performance even in zero\-shot transfer to new code\-mixed variants. 
+Using this work, Kartik et al.\ provided a framework that uses synthetic data generation with joint learning that improves translation quality for noisy, code-mixed text. Their method generated large code-mixed data~\citep{kartik2024}. It also uses joint training to share parameters around clean and noisy examples, which means that it gave an improved performance even in zero-shot transfer to new code-mixed variants.
 
 Another major trend in NLP has been the pre\-training and fine\-tuning process used by models like BERT (Bidirectional Encoder Representations from Transformers). BERT gave us a deep bidirectional contextual embedding method that captured language representations from large unlabeled data. BERT is also used in many downstream tasks that includes classification, inference, and translation related tasks after doing fine\-tuning.
 
@@ -111,12 +111,12 @@ Previous work has shown that mBERT can be used for code\-mixed and low\-resource
 The dataset that was used in this project is the HINMIX dataset. HINMIX is a massive parallel code-mixed dataset for Hindi-English code switching. 
 
 \begin{itemize}
-    \item This dataset contains 4.2M fully parallel sentences in 6 Hindi-English forms.
-    \item It also consists of a validation set with 280 examples and a test set with 2507 samples. 
+    \item This dataset contains $4.2$M fully parallel sentences in 6 Hindi-English forms.
+    \item It also consists of a validation set with $280$ examples and a test set with $2507$ samples. 
     \item HINMIX is a synthetic dataset. 
     \item Hicm includes Hindi sentences with codemix words substituted in English. 
     \item It focuses on Hinglish sentences where Hindi and English are blended in a natural, conversational way.
-    \item This dataset consists of 391,000 unique tokens with both Hindi and English.
+    \item This dataset consists of $391$,$000$ unique tokens with both Hindi and English.
     \item Each Hinglish sentence is paired with a human-annotated English translation.
 \end{itemize}
 
@@ -130,10 +130,10 @@ We evaluated Transformer and Seq2Seq architectures using both pre-trained multil
 \begin{tabular}{|l|l|l|l|}
 \hline
 \multicolumn{1}{|c|}{\textbf{Architecture}} & \multicolumn{1}{c|}{\textbf{Epochs}} & \multicolumn{1}{c|}{\textbf{Training Time (Hrs.)}} & \multicolumn{1}{c|}{\textbf{BLEU Score}} \\ \hline
-Transformer + mBERT                         & 10                                   & 23                                                 & \textbf{13.70}                           \\ \hline
-Seq2Seq + mBERT                             & 3                                    & 1                                                  & 0.09                                     \\ \hline
-Transformer + Learned Embeddings            & 10                                   & 1.25                                               & 1.26                                     \\ \hline
-Seq2Seq + Learned Embeddings                & 2                                    & 5                                                  & 1.83                                     \\ \hline
+Transformer + mBERT                         & $10$                                   & $23$                                                 & \textbf{$13.70$}                           \\ \hline
+Seq2Seq + mBERT                             & $3$                                    & $1$                                                  & $0.09$                                     \\ \hline
+Transformer + Learned Embeddings            & $10$                                   & $1.25$                                               & $1.26$                                     \\ \hline
+Seq2Seq + Learned Embeddings                & $2$                                    & $5$                                                  & $1.83$                                     \\ \hline
 \end{tabular}%
 }
 \caption{The Architectures and their associated BLEU scores.}\label{tab:archresults}
@@ -144,21 +144,21 @@ Transformer-based models consistently outperformed Seq2Seq models, highlighting 
 The combination of \textbf{Transformer + mBERT} achieved the highest BLEU score, demonstrating the importance of multilingual contextual embeddings for cross-lingual transfer. Models trained with learned embeddings showed limited performance, indicating insufficient semantic alignment across languages.
 
 \subsection{Effect of Dataset Size and Training Epochs}
-We further analyzed the impact of dataset scale and number of epochs using the Transformer + mBERT model, the results of which can be viewed in Table~\ref{tab:dataresults}
 \begin{table}[]
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{|l|l|l|}
 \hline
 \multicolumn{1}{|c|}{\textbf{Epochs}} & \multicolumn{1}{c|}{\textbf{Number of Samples}} & \multicolumn{1}{c|}{\textbf{BLEU Score}} \\ \hline
-10                                    & 500,000                                         & 1.26                                     \\ \hline
-10                                    & 1,000,000                                       & 1.30                                     \\ \hline
-3                                     & 4,200,000                                       & 9.52                                     \\ \hline
-5                                     & 4,200,000                                       & 11.20                                    \\ \hline
-10                                    & 4,200,000                                       & 13.70                                    \\ \hline
+$10$                                    & $500000$                                         & $1.26$                                     \\ \hline
+$10$                                    & $1000000$                                       & $1.30$                                     \\ \hline
+$3 $                                    & $4200000$                                       & $9.52$                                     \\ \hline
+$5 $                                    & $4200000$                                       & $11.20$                                    \\ \hline
+$10$                                    & $4200000$                                       & $13.70$                                    \\ \hline
 \end{tabular}%
 }
 \caption{Dataset scale results on Transformer + mBERT}\label{tab:dataresults}
 \end{table}
+We further analyzed the impact of dataset scale and number of epochs using the Transformer + mBERT model, the results of which can be viewed in Table~\ref{tab:dataresults}
 
 Increasing the number of training samples resulted in significant improvements in BLEU score.
 Even with fewer epochs, large datasets led to better performance than small datasets trained for more epochs.
@@ -173,11 +173,11 @@ To establish a baseline, we evaluated several pre-trained translation models wit
 \begin{tabular}{|l|l|}
 \hline
 \multicolumn{1}{|c|}{\textbf{Model}} & \multicolumn{1}{c|}{\textbf{BLEU Score}} \\ \hline
-facebook/nllb-200-distilled-600M     & \textbf{28.40}                           \\ \hline
-Helsinki-NLP/opus-mt-mul-en          & 16.60                                    \\ \hline
-RLM-hinglish-translator              & 15.69                                    \\ \hline
-Helsinki-NLP/opus-mt-hi-en           & 5.34                                     \\ \hline
-facebook/m2m100\_418M                & 1.21                                     \\ \hline
+facebook/nllb-200-distilled-600M     & \textbf{$28.40$}                           \\ \hline
+Helsinki-NLP/opus-mt-mul-en          & $16.60$                                 \\ \hline
+RLM-hinglish-translator              & $15.69$                                   \\ \hline
+Helsinki-NLP/opus-mt-hi-en           & $5.34$                                     \\ \hline
+facebook/m2m100\_418M                & $1.21$                                     \\ \hline
 \end{tabular}%
 }
 \caption{Pre-Trained Translation Model Scores}\label{tab:pretraincomp}
@@ -187,27 +187,76 @@ Large-scale multilingual models such as NLLB-200 significantly outperformed cust
 Models trained on multilingual or code-mixed data showed better zero-shot generalization.
 The performance gap highlights the importance of extensive multilingual pretraining.
 
+\section{Methodology}
+We describe the preprocessing methods, model implementations, and model evaluation in this section.
+
+\subsection{Data Preprocessing}
+We had the following approach for tokenizing the data - mBERT tokenizer. The BERT tokenizer uses BPE (byte-pair encoding) subword tokenization. We used the BertTokenizer from HuggingFace transformers [5]. OOV words are handled using subwords. This particular tokenizer had been pretrained on $104$ languages. We limited our max sequence length to $128$ - anything longer was truncated. [4]
+
+\subsection{Model Architectures}
+We used a simple transformer architecture with self-attention mechanism. This way, we are able to process sequences in parallel and capture long-range dependencies - often surpassing RNNs.
+
+Our transformer architecture (hidden dims = $256$) was designed as follows:
+\begin{enumerate}
+    \item The encoder consisted of three layers - mutli-head self attention (four heads), FFNN (with a dimension of 1024), layer normalization
+    \item The decoder had 3 layers that incorporated masked self-attention and cross-attention
+    \item Sinusoidal positional embedding
+\end{enumerate}
+A dropout rate (0.01) was applied after the attention and feed-forward layers.
+
+Our seq2seq architecture was designed as follows:
+\begin{enumerate}
+    \item Bidirectional LSTM encoder two layers and $256$ dimensions (since the bidirectional LSTM concatenates forward and backward hidden states)
+    \item LSTM decoder
+    \item BahadanauAttention [3] - This is a differentiable attention model without the unidirectional alignment limitation. When predicting a token, if not all the input tokens are relevant, the model aligns (or attends) only to parts of the input sequence that are deemed relevant to the current prediction. This is then used to update the current state before generating the next token.
+\end{enumerate}
+
+\begin{table}[]
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|l|l|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Hyperparameter}} & \multicolumn{1}{c|}{\textbf{Transformer}} & \textbf{Seq2Seq} \\ \hline
+Hidden Dimension                              & $256$                                       & $256$              \\ \hline
+Layers                                        & $2$                                         & $2$                \\ \hline
+Attention Heads                               & $8$                                         & -                \\ \hline
+Feed-Forward Dim.                             & $1024$                                      & -                \\ \hline
+Dropout                                       & $0.1$                                       & $0.1$              \\ \hline
+Embedding Dim.                                & $768$ to $256$                                & $768$ to $256$       \\ \hline
+\end{tabular}%
+}
+\caption{Hyperparameters on the Transformer and Seq2Seq models}\label{tab:hyperparams}
+\end{table}
+
+\subsection{Embeddings}
+We used the frozen bert-base-multilingual-cased embeddings - this is the pretrained BERT embedding trained on a massive multilingual corpus. We did this to preserve the mutli-lingual embedding space and also reduce our trainable parameters for our models. We also hoped that using pre-trained embeddings would give the model better zero-shot capabilities.
+
+\subsection{Evaluation}
+For evaluation, we used the BLEU (Bilingual Evaluation Understudy) for our primary evaluation metric - we used the sacrebleu library. The BLEU score is a measure of n-gram overlap between the predicted and reference translations. The scores range between $0$-$100$ with models around the $20$-$30$ BLEU points producing coherent translations.
+
+\section{Implementation}
+We implemented the following models: transformer and seq2seq with mBERT embeddings and compared our performance to baseline scores of learned embeddings.
+
+First we loaded up the embeddings from mBERT
+
+
 \section{Conclusion}
-In this project, we investigated cross\-lingual code\-mixed Hindi+English translation using different architectures and embedding strategies. Experimental results show that \textbf{Transformer\-based models outperform Seq2Seq models}, primarily due to their ability to capture long\-range dependencies through self\-attention mechanisms.
-
-The use of \textbf{pre\-trained multilingual embeddings (mBERT)} significantly improved translation quality compared to learned embeddings, demonstrating the importance of cross\-lingual semantic alignment. Additionally, experiments revealed that \textbf{dataset size has a greater impact than training epochs}, emphasizing the role of large-scale data in low\-resource settings.
-
-Although our best\-performing custom model achieved a BLEU score of $13.70$, it still lags behind large pre\-trained models such as NLLB\-200. This highlights the trade\-off between computational resources and performance and motivates future work on efficient fine\-tuning, data augmentation, and multilingual transfer learning.
-
-Overall, this study confirms that Transformers combined with multilingual pretraining form a strong foundation for cross-lingual code mixed translation.
-
-
-% Bibliography entries for the entire Anthology, followed by custom entries
-%\bibliography{custom,anthology-overleaf-1,anthology-overleaf-2}
+We investigated cross-lingual code-mixed Hindi-English translation in this project experimenting with different embedding strategies and architectures. Our results show that Transformer-based architecture performs better compared to Seq2Seq-based architecture. The main reason behind this would be the self-attention mechanism of Transformers, which supports the capturing long-range dependencies.
+ 
+Using multilingual pre-trained embeddings (i.e., mBERT) produced significantly better results than using learned embeddings and which shows us the importance of cross-lingual semantic alignment between the two languages. Our experiments also demonstrated the importance of large datasets on performance in low-resource environments, with dataset size having a larger impact than the number of training epochs.
+ 
+Our final model achieved a BLEU score of $13.70$, however larger pre-trained models such as NLLB-200 outperforms our model.These findings indicate that models with extensive pretraining outperform all others, even under zero-shot evaluation. Our future research will focus on developing efficient means of fine-tuning large pre-trained models, zero-shot testing on unseen code-mixed data, and cross-lingual transfer to other language pairs.
+ 
+The results support the conclusion that Transformers, combined with multilingual pre-training, form the foundation for building strong models for cross-lingual code-mixed translation.
 
 % Custom bibliography entries only
-\bibliography{custom}
-
-\appendix
-
-\section{Appendix}
-\label{sec:appendix}
-
-This is an appendix.
+\section{Bibliography}
+\begin{enumerate}[label = {[\arabic*]}]
+    \item kartik, "HINMIX\_hi-en," Hugging Face, Feb. 2025, doi: https://doi.org/10.57967/hf/4520.
+    \item K. Kartik, S. Soni, A. Kunchukuttan, T. Chakraborty, and M. S. Akhtar, "Synthetic Data Generation and Joint Learning for Robust Code-Mixed Translation," arXiv.org, 2024. \url{https://arxiv.org/abs/2403.16771}.
+    \item A. Zhang, Z. Lipton, M. Li, and A. Smola, "The Bahdanau Attention Mechanism - Dive into Deep Learning 1.0.3," D2l.ai, 2014. \url{https://d2l.ai/chapter_attention-mechanisms-and-transformers/bahdanau-attention.html}
+    \item J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding," ArXiv, Oct. 11, 2018. \url{https://arxiv.org/abs/1810.04805}
+    \item Google, "google-bert/bert-base-multilingual-cased · Hugging Face," huggingface.co, Mar. 11, 2024. \url{https://huggingface.co/google-bert/bert-base-multilingual-cased}
+    \item I. Sutskever, O. Vinyals, and Q. V. Le, "Sequence to Sequence Learning with Neural Networks," arXiv.org, 2014. \url{https://arxiv.org/abs/1409.3215}
+\end{enumerate}
 
 \end{document}
