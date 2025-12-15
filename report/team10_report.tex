@@ -166,6 +166,21 @@ We used the frozen bert-base-multilingual-cased embeddings - this is the pretrai
 \subsection{Evaluation}
 For evaluation, we used the BLEU (Bilingual Evaluation Understudy) for our primary evaluation metric - we used the sacrebleu library. The BLEU score is a measure of n-gram overlap between the predicted and reference translations. The scores range between $0$-$100$ with models around the $20$-$30$ BLEU points producing coherent translations.
 
+\section{Implementation}
+We implemented the following models: transformer and seq2seq with mBERT embeddings and compared our performance to baseline scores of learned embeddings.
+
+First we loaded up the embeddings from mBERT
+\includegraphics[width=\columnwidth]{tokenizer.png}
+
+Then we tokenized both the source (hindi-english code mixed) and target (english) sentences using our loaded tokenizer. mBERT applies BPE to handle OOV words by breaking them up into subwords. During training, we also shift the target sequence that creates input output pairs for the decoder. Thus, at each timestep, the decoder receives all previous tokens and learns to predict the next token.
+\includegraphics[width=\columnwidth]{batching.png}
+
+This is our main training loop using AdamW as the optimizer and Cross Entropy loss. After gradient computation using backpropagation, we also applied a clipping of $1.0$ to prevent explosion of the gradients.
+\includegraphics[width=\columnwidth]{trainloop.png}
+
+Then, we calculated the BLEU score using 500 of our test samples. 
+\includegraphics[width=\columnwidth]{bleu.png}
+
 \section{Experiments and Results}
 
 \subsection{Architecture and Embedding Comparison}
@@ -233,20 +248,6 @@ Large-scale multilingual models such as NLLB-200 significantly outperformed cust
 Models trained on multilingual or code-mixed data showed better zero-shot generalization.
 The performance gap highlights the importance of extensive multilingual pretraining.
 
-\section{Implementation}
-We implemented the following models: transformer and seq2seq with mBERT embeddings and compared our performance to baseline scores of learned embeddings.
-
-First we loaded up the embeddings from mBERT
-\includegraphics[width=\columnwidth]{tokenizer.png}
-
-Then we tokenized both the source (hindi-english code mixed) and target (english) sentences using our loaded tokenizer. mBERT applies BPE to handle OOV words by breaking them up into subwords. During training, we also shift the target sequence that creates input output pairs for the decoder. Thus, at each timestep, the decoder receives all previous tokens and learns to predict the next token.
-\includegraphics[width=\columnwidth]{batching.png}
-
-This is our main training loop using AdamW as the optimizer and Cross Entropy loss. After gradient computation using backpropagation, we also applied a clipping of $1.0$ to prevent explosion of the gradients.
-\includegraphics[width=\columnwidth]{trainloop.png}
-
-Then, we calculated the BLEU score using 500 of our test samples. 
-\includegraphics[width=\columnwidth]{bleu.png}
 
 \section{Conclusion}
 We investigated cross-lingual code-mixed Hindi-English translation in this project experimenting with different embedding strategies and architectures. Our results show that Transformer-based architecture performs better compared to Seq2Seq-based architecture. The main reason behind this would be the self-attention mechanism of Transformers, which supports the capturing long-range dependencies.
