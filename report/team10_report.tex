@@ -1,0 +1,213 @@
+\documentclass[11pt]{article}
+
+% Change "review" to "final" to generate the final (sometimes called camera-ready) version.
+% Change to "preprint" to generate a non-anonymous version with page numbers.
+\usepackage{acl}
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+
+% For proper rendering and hyphenation of words containing Latin characters (including in bib files)
+\usepackage[T1]{fontenc}
+% For Vietnamese characters
+% \usepackage[T5]{fontenc}
+% See https://www.latex-project.org/help/documentation/encguide.pdf for other character sets
+
+% This assumes your files are encoded as UTF8
+\usepackage[utf8]{inputenc}
+
+% This is not strictly necessary, and may be commented out,
+% but it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+
+% This is also not strictly necessary, and may be commented out.
+% However, it will improve the aesthetics of text in
+% the typewriter font.
+\usepackage{inconsolata}
+
+%Including images in your LaTeX document requires adding
+%additional package(s)
+\usepackage{graphicx}
+
+% If the title and author information does not fit in the area allocated, uncomment the following
+%
+%\setlength\titlebox{<dim>}
+%
+% and set <dim> to something 5cm or larger.
+
+\title{Code-Mixed Language Translation}
+
+
+
+\author{
+ \textbf{Adem Odza},
+ \textbf{Abhirup Mukherjee},
+ \textbf{Buvana Seshathri},
+ \textbf{Samiha Kuncham},
+\\
+\\
+ The University of Texas at Dallas,
+ CS 6320 Natural Language Processing,
+ Dr.\ Xinya Du
+\\
+ \small{
+   \textbf{GitHub:} \href{https://github.com/AdemOdza/Multi-Lingual-Text-Translation}{https://github.com/AdemOdza/Multi-Lingual-Text-Translation}
+ }
+}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+In our paper, we investigate and compare the performance of different architectures for the translation of code-mixed language. 
+Code-mixed language translation requires the identification of languages as well as the tokenization of different scripts, which makes it a much more complex problem than typical translation tasks. 
+In order to determine the best type of architecture for this problem, we evaluated different combinations of models and word embeddings by comparing their BLEU scores. 
+We found that Transformers using the mBERT embeddings outperformed the other architectures. 
+While the pre-trained multilingual embeddings performed well, the results suggest that architectures specifically designed and trained for code-mixed language translations would have a better performance. 
+These findings should provide guidance for those looking to perform translation on texts with mixed languages. 
+\end{abstract}
+
+\section{Introduction}
+
+Translation has always been a prominent task within natural language processing, especially with the rise of neural networks and machine learning. 
+While existing translation tools are powerful, the rise of informal and code-mixed language poses a problem for these tools. 
+
+Code-mixing is the act of combining words from two different languages in speech, typically done by bilingual speakers or between family members who have varying levels of fluency in their common language. 
+The rise of social media and increasingly informal speech online has led to code-mixing becoming a common occurrence in online discussion. 
+Social media platforms typically have translation features for their site content, but these do not always perform correctly when messages contain multi-lingual content. 
+The mixing of languages leads to many problems with translation, such as tokenization of different scripts, precision/size of the tokens, handling languages with different morphemes, and preserving context between languages.
+
+There are many differences between languages that most translation systems might not account for. 
+Languages like English and Spanish might be similarly structured enough to where there is not a significant difference in performance, but what about more distant languages like English and Hindi? 
+They use the Latin and Devanagari scripts respectively, English uses Subject-Verb-Object order while Hindi uses Subject-Object-Verb, and they have varying amounts of Vowels and Consonants. 
+This poses a significant challenge for tokenization and representation of the words in a common way. 
+There is also the problem of identifying which words are in which language and preserving context between languages.
+
+In our paper, we investigate some of the existing models available and compare the results of different architectures that incorporate these models. 
+We investigated architectures using different word embeddings along with different translation models. 
+These architectures were trained and tested with a mixed English-Hindi language corpus as well as some additional Zero-Shot testing with a mixed English-Spanish corpus. 
+We then evaluated the models based on their BLEU scores. 
+
+
+\section{Related Work}
+Work in machine translation and multilingual natural language processing has improved a lot over the recent years, especially in handling the unique cases that are introduced by code\-mixed languages.
+
+Modern neural machine translation (NMT) has given us the foundation of the sequence\-to\-sequence (seq2seq) paradigm, which learns an end\-to\-end mapping from an input sequence to a target sequence using neural networks. Sutskever et al. introduced the canonical seq2seq model that uses multilayer Long Short\-Term Memory (LSTM) encoders and decoders to transform variable\-length inputs into fixed\-length representations, and then decode these representations into target sequences. This paper showed good performance on English–French translation benchmarks compared to traditional statistical methods. 
+These seq2seq models were used as the foundation for neural approaches for translation and other sequence prediction tasks. This was done by showing that recurrent architectures could learn representations for both encoding and decoding language data without human intervention.
+
+Even though we see these advances in neural translation, the code\-mixed language translation part has many other challenges due to the frequent blending of languages while people speak and the lack of annotated parallel data (to verify against). To address such data limitations, recent work has focused on synthetic data generation. The HINMIX\_hi\-en dataset that we used in this project gave us large\-scale parallel Hinglish\-English data by using bilingual corpus data and synthetic code\-mixing techniques.
+
+Using this work, Kartik et al. provided a framework that uses synthetic data generation with joint learning that improves translation quality for noisy, code\-mixed text. Their method generated large code\-mixed data. It also uses joint training to share parameters around clean and noisy examples, which means that it gave an improved performance even in zero\-shot transfer to new code\-mixed variants. 
+
+Another major trend in NLP has been the pre\-training and fine\-tuning process used by models like BERT (Bidirectional Encoder Representations from Transformers). BERT gave us a deep bidirectional contextual embedding method that captured language representations from large unlabeled data. BERT is also used in many downstream tasks that includes classification, inference, and translation related tasks after doing fine\-tuning.
+
+Even though BERT itself is not a sequence\-to\-sequence model, the idea of using a pretrained contextual encoder has affected later translation architectures. It has mainly affected transformer\-based models that use pretrained representations or attention mechanisms. These pretrained models improved generalization for code\-mixed translation where annotated resources are extremely limited.
+
+Previous work has shown that mBERT can be used for code\-mixed and low\-resource translation settings. This is done by making use of mBERT's ability to model mixed\-language context and cross\-lingual semantics.\ mBERT (Multilingual BERT) is an extension of BERT to 100+ languages given to us by jointly pretraining on large multilingual data.
+
+
+\section{Data}
+The dataset that was used in this project is the HINMIX dataset. HINMIX is a massive parallel code-mixed dataset for Hindi-English code switching. 
+
+\begin{itemize}
+    \item This dataset contains 4.2M fully parallel sentences in 6 Hindi-English forms.
+    \item It also consists of a validation set with 280 examples and a test set with 2507 samples. 
+    \item HINMIX is a synthetic dataset. 
+    \item Hicm includes Hindi sentences with codemix words substituted in English. 
+    \item It focuses on Hinglish sentences where Hindi and English are blended in a natural, conversational way.
+    \item This dataset consists of 391,000 unique tokens with both Hindi and English.
+    \item Each Hinglish sentence is paired with a human-annotated English translation.
+\end{itemize}
+
+\section{Experiments and Results}
+
+\subsection{Architecture and Embedding Comparison}
+
+We evaluated Transformer and Seq2Seq architectures using both pre-trained multilingual embeddings (mBERT) and learned embeddings. The results can be viewed in Table~\ref{tab:archresults}. 
+\begin{table}[]
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|l|l|l|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Architecture}} & \multicolumn{1}{c|}{\textbf{Epochs}} & \multicolumn{1}{c|}{\textbf{Training Time (Hrs.)}} & \multicolumn{1}{c|}{\textbf{BLEU Score}} \\ \hline
+Transformer + mBERT                         & 10                                   & 23                                                 & \textbf{13.70}                           \\ \hline
+Seq2Seq + mBERT                             & 3                                    & 1                                                  & 0.09                                     \\ \hline
+Transformer + Learned Embeddings            & 10                                   & 1.25                                               & 1.26                                     \\ \hline
+Seq2Seq + Learned Embeddings                & 2                                    & 5                                                  & 1.83                                     \\ \hline
+\end{tabular}%
+}
+\caption{The Architectures and their associated BLEU scores.}\label{tab:archresults}
+\end{table}
+
+
+Transformer-based models consistently outperformed Seq2Seq models, highlighting the effectiveness of self-attention in capturing long-range dependencies. 
+The combination of \textbf{Transformer + mBERT} achieved the highest BLEU score, demonstrating the importance of multilingual contextual embeddings for cross-lingual transfer. Models trained with learned embeddings showed limited performance, indicating insufficient semantic alignment across languages.
+
+\subsection{Effect of Dataset Size and Training Epochs}
+We further analyzed the impact of dataset scale and number of epochs using the Transformer + mBERT model, the results of which can be viewed in Table~\ref{tab:dataresults}
+\begin{table}[]
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|l|l|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Epochs}} & \multicolumn{1}{c|}{\textbf{Number of Samples}} & \multicolumn{1}{c|}{\textbf{BLEU Score}} \\ \hline
+10                                    & 500,000                                         & 1.26                                     \\ \hline
+10                                    & 1,000,000                                       & 1.30                                     \\ \hline
+3                                     & 4,200,000                                       & 9.52                                     \\ \hline
+5                                     & 4,200,000                                       & 11.20                                    \\ \hline
+10                                    & 4,200,000                                       & 13.70                                    \\ \hline
+\end{tabular}%
+}
+\caption{Dataset scale results on Transformer + mBERT}\label{tab:dataresults}
+\end{table}
+
+Increasing the number of training samples resulted in significant improvements in BLEU score.
+Even with fewer epochs, large datasets led to better performance than small datasets trained for more epochs.
+Additional epochs provided consistent gains when sufficient data was available.
+These findings emphasize that \textbf{data scale plays a critical role} in effective cross-lingual transfer.
+
+\subsection{Comparison with Pre-trained Translation Models}
+To establish a baseline, we evaluated several pre-trained translation models without fine-tuning. These models are compared in Table~\ref{tab:pretraincomp}
+
+\begin{table}[]
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Model}} & \multicolumn{1}{c|}{\textbf{BLEU Score}} \\ \hline
+facebook/nllb-200-distilled-600M     & \textbf{28.40}                           \\ \hline
+Helsinki-NLP/opus-mt-mul-en          & 16.60                                    \\ \hline
+RLM-hinglish-translator              & 15.69                                    \\ \hline
+Helsinki-NLP/opus-mt-hi-en           & 5.34                                     \\ \hline
+facebook/m2m100\_418M                & 1.21                                     \\ \hline
+\end{tabular}%
+}
+\caption{Pre-Trained Translation Model Scores}\label{tab:pretraincomp}
+\end{table}
+
+Large-scale multilingual models such as NLLB-200 significantly outperformed custom-trained models.
+Models trained on multilingual or code-mixed data showed better zero-shot generalization.
+The performance gap highlights the importance of extensive multilingual pretraining.
+
+\section{Conclusion}
+In this project, we investigated cross\-lingual code\-mixed Hindi+English translation using different architectures and embedding strategies. Experimental results show that \textbf{Transformer\-based models outperform Seq2Seq models}, primarily due to their ability to capture long\-range dependencies through self\-attention mechanisms.
+
+The use of \textbf{pre\-trained multilingual embeddings (mBERT)} significantly improved translation quality compared to learned embeddings, demonstrating the importance of cross\-lingual semantic alignment. Additionally, experiments revealed that \textbf{dataset size has a greater impact than training epochs}, emphasizing the role of large-scale data in low\-resource settings.
+
+Although our best\-performing custom model achieved a BLEU score of $13.70$, it still lags behind large pre\-trained models such as NLLB\-200. This highlights the trade\-off between computational resources and performance and motivates future work on efficient fine\-tuning, data augmentation, and multilingual transfer learning.
+
+Overall, this study confirms that Transformers combined with multilingual pretraining form a strong foundation for cross-lingual code mixed translation.
+
+
+% Bibliography entries for the entire Anthology, followed by custom entries
+%\bibliography{custom,anthology-overleaf-1,anthology-overleaf-2}
+
+% Custom bibliography entries only
+\bibliography{custom}
+
+\appendix
+
+\section{Appendix}
+\label{sec:appendix}
+
+This is an appendix.
+
+\end{document}
